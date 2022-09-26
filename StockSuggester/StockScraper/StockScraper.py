@@ -1,57 +1,100 @@
 #This file is for the purpose of scrubbing the internet for recent stock trades by public figures and importing them as text files
 
+from ast import Try
+
 from lib2to3.pytree import convert
 from re import S
 from sqlite3 import DateFromTicks
+from sre_compile import isstring
 import requests #Sends HTTP requests to a website's server, which will return a response containing my needed data
 from bs4 import BeautifulSoup #Parser that extracts data from HTML 
-import http.client
 import pandas as pd
 
 class StockScraper():
     """ A class that will scrape the internet for the investment patterns of political figure
     """
-    
-    
-
-    def __init__(self, url):
-
-        self.interfaceWeb(url)
-        
-        
         
     def interfaceWeb (url):
-
-        response = requests.get(url, verify = True) #tell Requests to get information from website with politician stock information. Verify is verifying if website has an SSL
-                                                    #If you encounter an SSL error, copy libcrpyto-1_1 and libss1-1_1 to DLL folder
-        #print(response) #prints Response [200] if it worked properly
-
-        soup = BeautifulSoup(response.text, 'html.parser')
+        pass
+    
+    
         
+    def prepareTradeHistory(politicianId): 
         
+        responseJson = []
+
+        url = "https://bff.capitoltrades.com/trades"   
+                 
+        if (isinstance(politicianId, list)): #when given a list of politicians, the method should handle it by
+                                             #putting all trades from all listed
+            politicianId = [*set(politicianId)]
+            for politician in politicianId: #For each politician Id in the list it will try to iterate
+                                        #through all of the pages of stock information, stopping if we
+                                        #try to go to a page that does not exist
+                
+                try:    
+                    
+                    for page in range(1, 10):
+
+                        querystring = {"page":f"{page}","pageSize":"100","politician":f"{politician}"}
+
+                        headers = {
+                            "authority": "bff.capitoltrades.com",
+                            "accept": "*/*",
+                            "accept-language": "en-US,en;q=0.9,fr;q=0.8",
+                            "content-type": "application/json",
+                            "origin": "https://www.capitoltrades.com",
+                            "referer": "https://www.capitoltrades.com/",
+                            "sec-ch-ua": "^\^Google"
+                            }
+
+                        response = requests.request("GET", url, headers=headers, params=querystring)
+
+                        data = response.json()
+                        
+                        for p in data["data"]:
+                            
+                            responseJson.append(p)
+            
+                except:
+                    
+                    pass
+            
+        else:
+            
+            try:
+                for page in range(1, 10):
+
+                    querystring = {"page":f"{page}","pageSize":"100","politician":f"{politicianId}"}
+
+                    headers = {
+                        "authority": "bff.capitoltrades.com",
+                        "accept": "*/*",
+                        "accept-language": "en-US,en;q=0.9,fr;q=0.8",
+                        "content-type": "application/json",
+                        "origin": "https://www.capitoltrades.com",
+                        "referer": "https://www.capitoltrades.com/",
+                        "sec-ch-ua": "^\^Google"
+                        }
+
+                    response = requests.request("GET", url, headers=headers, params=querystring)
+
+                    data = response.json()
+                    
+                    for p in data["data"]:
+                        
+                        responseJson.append(p)
+            
+            except IndexError:
+                
+                print(f"index error at page: {page}")
+                pass
         
-    def interfaceCT(): #used specifically for interfacing with the capitol trades website
-        conn = http.client.HTTPSConnection("bff.capitoltrades.com")
-
-        payload = ""
-
-        headers = {
-        'authority': "bff.capitoltrades.com",
-        'accept': "*/*",
-        'accept-language': "en-US,en;q=0.9,fr;q=0.8",
-        'content-type': "application/json",
-        'origin': "https://www.capitoltrades.com",
-        'referer': "https://www.capitoltrades.com/",
-        'sec-ch-ua': "^\^Google"
-         }
-
-        conn.request("GET", "/trades?politician=G000563&txDate=all", payload, headers)
-
-        res = conn.getresponse()
+        getIdDataFrame = pd.json_normalize(responseJson) #puts the information in a format that is easily sorted in excel
         
-        data = res.read()
-
-        print(data.decode("utf-8"))
+        getIdDataFrame.to_csv("Trades.csv") #Takes the information of all traders gathered and puts them in a csv file along with some other data                
+        
+        return getIdDataFrame
         
         
 
@@ -87,6 +130,8 @@ class StockScraper():
             getIdDataFrame.to_csv("TraderIDs.csv") #Takes the information of all traders gathered and puts them in a csv file along with some other data
             
         return getIdDataFrame
+    
+    
 
     def getIds( name = None, party = None, state = None, chamber = None, gender = None, testData = None):
         """A method that will grab the IDs of all the politicians with criteria matching passed arguments. If no arguments are passed, it will return the IDs of all politicians
@@ -136,6 +181,7 @@ class StockScraper():
         
         return politicianIds.to_list()
     
+ 
  
     def searchColumn(dataframe,column, value, returnDataFrame = False): 
         """This method will take the given dataframe and a column and return a list containing the IDs of the relevant parties.
@@ -264,13 +310,23 @@ class StockScraper():
                  raise ValueError(
                     f"{state} is not a state or a valid state abbreviation.")           
 
-            
         return returnState
 
 
 
-def detailedInfo(politician):
-    pass
+    def detailedInfo(id):
+        """ When giving IDs as a string or list of strings will go to their more detailed pages
+        and gather the information there. Only send out information wanted in the politician object"""
+
+        tradeDataframe = StockScraper.prepareTradeHistory(id) #prepareTradeHistory handles both strings and lists
+    
+        tradeDataframe = tradeDataframe.drop(columns = ["_txId","_assetId","_issuerId","pubDate","hasCapitalGains",
+                                       "owner", "committees", "labels", "asset.instrument", 
+                                       "issuer._stateId", "issuer.c2iq", "politician.nickname"])
+        
+        return tradeDataframe
+    
+    
 
 
 
@@ -279,11 +335,7 @@ if __name__ == "__main__":
     #StockScraper.interfaceWeb("https://www.smartinsider.com/politicians/")
     #StockScraper.interfaceWeb("https://www.capitoltrades.com/politicians/")
     #StockScraper.interfaceCT()
-    print(StockScraper.getIds(
-            name = 'x', party = 'republican', state = 'tn', 
-            gender = 'male', chamber = 'senate' ))
-
-
+    print(StockScraper.detailedInfo("F000462"))
 
 
 

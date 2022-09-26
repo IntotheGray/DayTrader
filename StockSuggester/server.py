@@ -1,5 +1,5 @@
 from flask import Flask,request
-import StockScraper as ss
+import StockScraper.StockScraper as ss
 
 app = Flask(__name__)
 

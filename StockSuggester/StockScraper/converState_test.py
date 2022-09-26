@@ -1,4 +1,4 @@
-import StockScraper    # The code to test
+import StockScraper   # The code to test
 import unittest   # The test framework
 
 class Test_ConvertState(unittest.TestCase):
