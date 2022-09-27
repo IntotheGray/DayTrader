@@ -1,5 +1,5 @@
 from re import S
-import StockScraper   # The code to test
+from StockScraper import StockScraper   # The code to test
 import unittest   # The test framework
 import pandas as pd
 
