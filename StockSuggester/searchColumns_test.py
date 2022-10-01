@@ -1,7 +1,9 @@
 from cgi import test
-import StockScraper    # The code to test
+import StockScraper   # The code to test
 import unittest   # The test framework
 import pandas as pd
+import os
+os.chdir('c:/Users/Owner/Documents/GitHub/DayTrader/StockSuggester')
 
 class Test_SearchColumn(unittest.TestCase):
 
@@ -31,8 +33,8 @@ class Test_SearchColumn(unittest.TestCase):
         
     def test_searchColumnName4(self):       
         #Test that searchColumn properly handles values that are not within the list
-        self.assertRaises(ValueError, StockScraper.StockScraper.searchColumn(
-            Test_SearchColumn.dataframe, 'Name', "David"))
+        self.assertRaises(ValueError, StockScraper.StockScraper.searchColumn,
+            Test_SearchColumn.dataframe, 'Name', "David")
     
     
     
@@ -66,7 +68,7 @@ class Test_SearchColumn(unittest.TestCase):
         self.assertEqual(pd.testing.assert_frame_equal(StockScraper.StockScraper.searchColumn(
             Test_SearchColumn.dataframe, 'party', 'A', True)[0],answerDf),None)
         
-        
+            
 if __name__ == '__main__':
 
     unittest.main()
