@@ -93,7 +93,7 @@ class StockScraper():
         
         getIdDataFrame = pd.json_normalize(responseJson) #puts the information in a format that is easily sorted in excel
         
-        getIdDataFrame.to_csv("./Trades.csv") #Takes the information of all traders gathered and puts them in a csv file along with some other data                
+        getIdDataFrame.to_csv("./TradesExtended.csv") #Takes the information of all traders gathered and puts them in a csv file along with some other data                
         
         return getIdDataFrame
         
@@ -323,10 +323,12 @@ class StockScraper():
         and gather the information there. Only send out information wanted in the politician object"""
 
         tradeDataframe = StockScraper.prepareTradeHistory(id) #prepareTradeHistory handles both strings and lists
-    
-        tradeDataframe = tradeDataframe.drop(columns = ["_txId","_assetId","_issuerId","pubDate","hasCapitalGains",
+        
+        tradeDataframe = tradeDataframe.drop(columns = ["_txId","_assetId","_issuerId","pubDate", "txTypeExtended","hasCapitalGains",
                                        "owner", "committees", "labels", "asset.instrument", 
                                        "issuer._stateId", "issuer.c2iq", "politician.nickname"])
+        
+        tradeDataframe.to_csv("./Trades.csv")
         
         return tradeDataframe
     
