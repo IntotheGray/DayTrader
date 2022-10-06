@@ -332,9 +332,6 @@ class StockScraper():
         
         return tradeDataframe
     
-    
-    def politicianPopulate(dataframe):
-        pass
 
 
 if __name__ == "__main__":

@@ -25,6 +25,8 @@ class Test_Politician(unittest.TestCase):
     benDf = testDataframe.iloc[[0]]
         
     Andy = Politician(andyDf)
+    
+    Andy2 = Andy
 
     Elizabeth = Politician(elizaDf)
     
@@ -37,13 +39,57 @@ class Test_Politician(unittest.TestCase):
     def test_unloadDataframe(self):
         
         correctDf = pd.DataFrame([['Andy', 7, 'A', 'Alabama', 'House']],columns = ['Name', '_politicianId', 'party', 'state', 'chamber']) #test we are grabbing the correct dataframe
-        self.assertEqual(pd.testing.assert_frame_equal(self.Andy.dataframe, correctDf),None)
         
-        self.assertEqual(self.Andy.Name, 'Andy' )
+        self.assertEqual(pd.testing.assert_frame_equal(self.Andy.dataframe, correctDf),None) #tests the dataframes are equal
+        
+        self.assertEqual(self.Andy.Name, 'Andy' ) #tests the attributes are properly set
         
         self.assertEqual(self.Andy._politicianId, 7)
         
+        self.assertEqual(self.Andy.party,'A')
         
+        self.assertEqual(self.Andy.state,"Alabama")
+        
+        self.assertEqual(self.Andy.chamber, 'House')
+        
+        
+    def test_changeAttr(self):
+        
+        self.assertRaises(AttributeError,
+            self.Andy2.changeAttr, ("Not an attribute"), ("Shouldn't be value"))
+        
+        self.Andy2.changeAttr("Name", "Amdy")
+        
+        self.assertEqual(self.Andy2.Name, "Amdy")
+    
+    
+    
+    def test_hasAttr(self):
+    
+        self.assertEqual(self.Andy.hasAttr("Name"), True)
+        
+        self.assertEqual(self.Andy.hasAttr("Not an attribute"), False)
+    
+    
+    def test_removeAttr(self):
+        
+        self.assertEqual(self.Andy2.hasAttr("Name"), True)
+        
+        self.Andy2.removeAttr("Name")
+        
+        self.assertEqual(self.Andy2.hasAttr("Name"), False)
+        
+        
+        
+    def test_addAttr(self):
+        
+        self.assertEqual(self.Andy2.hasAttr("Height"), False)
+        
+        self.Andy2.addAttr("Height", "165")
+        
+        self.assertEqual(self.Andy2.hasAttr("Height"), True)
+    
+    
 if __name__ == "__main__":
     
     data = [['Andy', 7, 'A', 'Alabama', 'House'],
